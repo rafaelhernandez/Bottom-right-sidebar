@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3010/sidebar/business"
+  target: "http://localhost:3010/api/sidebar/business"
   phases:
     - duration: 20
       arrivalRate: 20

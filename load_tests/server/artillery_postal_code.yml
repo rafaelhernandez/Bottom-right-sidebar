@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3010/sidebar/postalCode"
+  target: "http://localhost:3010/api/sidebar/postalCode"
   phases:
     - duration: 20
       arrivalRate: 20

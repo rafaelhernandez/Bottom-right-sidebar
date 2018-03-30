@@ -5,48 +5,67 @@ import axios from "axios";
 class App extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      business: [{}],
-      postalCode: Number,
-      matchBiz1: [{}],
-      matchBiz2: [{}],
-      matchBiz3: [{}],
-      tip1: null,
-      tip2: null,
-      tip3: null,
-      photo1: null,
-      photo2: null,
-      photo3: null,
-      starRating1: null,
-      starRating2: null,
-      starRating3: null
-    };
+    this.id = props.businessId;
+    this.initialState = props.initialState;
+    if (props.initialState && props.initialState.loaded) {
+      this.state = {
+        business: props.initialState.business,
+        postalCode: props.initialState.postal_code,
+        matchBiz1: props.initialState.business1,
+        matchBiz2: props.initialState.business2,
+        matchBiz3: props.initialState.business3,
+        tip1: props.initialState.business1 && props.initialState.business1.tip_text,
+        tip2: props.initialState.business2 && props.initialState.business2.tip_text,
+        tip3: props.initialState.business3 && props.initialState.business3.tip_text,
+        photo1: props.initialState.business1 && props.initialState.business1.encoded_photo,
+        photo2: props.initialState.business2 && props.initialState.business2.encoded_photo,
+        photo3: props.initialState.business3 && props.initialState.business3.encoded_photo,
+        starRating1: props.initialState.business1 && this.getStars(props.initialState.business1.stars),
+        starRating2: props.initialState.business2 && this.getStars(props.initialState.business2.stars),
+        starRating3: props.initialState.business3 && this.getStars(props.initialState.business3.stars)
+      };
+    } else {
+      this.state = {
+        business: [{}],
+        postalCode: Number,
+        matchBiz1: [{}],
+        matchBiz2: [{}],
+        matchBiz3: [{}],
+        tip1: null,
+        tip2: null,
+        tip3: null,
+        photo1: null,
+        photo2: null,
+        photo3: null,
+        starRating1: null,
+        starRating2: null,
+        starRating3: null
+      };
+    }
   }
 
   componentDidMount() {
-    var url = window.location.href.split("/").pop();
-    url =
-      url.charAt(url.length - 1) === "/" ? url.substr(0, url.length - 1) : url;
-    url = url.split("?");
-    axios
-      .get("/sidebar/business/" + url[0])
-      .then(response => {
-        this.setState({ business: response.data });
-      })
-      .then(() => {
-        var postalCode = this.state.business[0].postal_code;
-        var bizId = this.state.business[0].id;
-        this.setState({ postalCode: postalCode });
-        this.fetchSuggestedBusiness(postalCode);
-      })
-      .catch(err => {
-        console.log(err, "this is the error in the componentDidMount");
-      });
+    if (!this.props.initialState || !this.props.initialState.loaded) {
+      axios
+        .get(`/api/sidebar/business/${this.id}`)
+        .then(response => {
+          this.setState({ business: response.data });
+        })
+        .then(() => {
+          var postalCode = this.state.business[0].postal_code;
+          var bizId = this.state.business[0].id;
+          this.setState({ postalCode: postalCode });
+          this.fetchSuggestedBusiness(postalCode);
+        })
+        .catch(err => {
+          console.log(err, "this is the error in the componentDidMount");
+        });
+    }
   }
 
   fetchSuggestedBusiness(postalCode) {
     axios
-      .get("/sidebar/postalCode/" + postalCode)
+      .get("/api/sidebar/postalCode/" + postalCode)
       .then(response => {
         var biz1 = response.data[1];
         var biz2 = response.data[2];
@@ -55,151 +74,41 @@ class App extends React.Component {
           matchBiz1: biz1, 
           matchBiz2: biz2, 
           matchBiz3: biz3,
-          tip1: biz1.tip_text,
-          tip2: biz2.tip_text,
-          tip3: biz3.tip_text,
-          photo1: biz1.encoded_photo,
-          photo2: biz2.encoded_photo,
-          photo3: biz2.encoded_photo,
+          tip1: biz1 && biz1.tip_text,
+          tip2: biz2 && biz2.tip_text,
+          tip3: biz3 && biz3.tip_text,
+          photo1: biz1 && biz1.encoded_photo,
+          photo2: biz2 && biz2.encoded_photo,
+          photo3: biz3 && biz3.encoded_photo,
+          starRating1: biz1 && this.getStars(biz1.stars),
+          starRating2: biz2 && this.getStars(biz2.stars),
+          starRating3: biz3 && this.getStars(biz3.stars)
          });
-        this.setStars(biz1.stars);
-        this.setStars(biz2.stars);
-        this.setStars(biz3.stars);
       })
       .catch(err => {
         console.log(err, "error fetch postalCode axios");
       });
   }
 
- 
-
-  setStars(stars) {
+  getStars(stars) {
     if (stars === 1) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/joRV605.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/joRV605.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/joRV605.png"
-        });
-      }
+      return 'https://i.imgur.com/joRV605.png';
     } else if (stars === 1.5) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/fqHSmyz.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/fqHSmyz.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/fqHSmyz.png"
-        });
-      }
+      return 'https://i.imgur.com/fqHSmyz.png';
     } else if (stars === 2) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/GsBh9O5.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/GsBh9O5.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/GsBh9O5.png"
-        });
-      }
+      return 'https://i.imgur.com/GsBh9O5.png';
     } else if (stars === 2.5) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/HHk4ca7.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/HHk4ca7.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/HHk4ca7.png"
-        });
-      }
+      return 'https://i.imgur.com/HHk4ca7.png';
     } else if (stars === 3) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/eXa2t1X.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/eXa2t1X.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/eXa2t1X.png"
-        });
-      }
+      return 'https://i.imgur.com/eXa2t1X.png';
     } else if (stars === 3.5) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/nDcH9au.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/nDcH9au.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/nDcH9au.png"
-        });
-      }
+      return 'https://i.imgur.com/nDcH9au.png';
     } else if (stars === 4) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/v2Ep8kQ.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/v2Ep8kQ.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/v2Ep8kQ.png"
-        });
-      }
+      return 'https://i.imgur.com/v2Ep8kQ.png';
     } else if (stars === 4.5) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/e2b0NN4.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/e2b0NN4.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/e2b0NN4.png"
-        });
-      }
+      return 'https://i.imgur.com/e2b0NN4.png';
     } else if (stars === 5) {
-      if (this.state.starRating1 === null) {
-        this.setState({
-          starRating1: "https://i.imgur.com/327Fh6y.png"
-        });
-      } else if (this.state.starRating2 === null) {
-        this.setState({
-          starRating2: "https://i.imgur.com/327Fh6y.png"
-        });
-      } else if (this.state.starRating3 === null) {
-        this.setState({
-          starRating3: "https://i.imgur.com/327Fh6y.png"
-        });
-      }
+      return 'https://i.imgur.com/327Fh6y.png';
     }
   }
 
@@ -223,7 +132,7 @@ class App extends React.Component {
                 </div>
                 <div className="rightsb_media-story">
                   <div className="rightsb_media-title">
-                    {this.state.matchBiz1.name}
+                    {this.state.matchBiz1 && this.state.matchBiz1.name}
                   </div>
                   <div className="rightsb_bizrating">
                     <div className="rightsb_star-rating">
@@ -233,7 +142,7 @@ class App extends React.Component {
                       />
                     </div>
                     <span className="rightsb_review-count">
-                      {this.state.matchBiz1.review_count} reviews
+                      {this.state.matchBiz1 ? this.state.matchBiz1.review_count : 0} reviews
                     </span>
                   </div>
                   <q className="rightsb_tips">{this.state.tip1}</q>
@@ -254,7 +163,7 @@ class App extends React.Component {
                 </div>
                 <div className="rightsb_media-story">
                   <div className="rightsb_media-title">
-                    {this.state.matchBiz2.name}
+                    {this.state.matchBiz2 && this.state.matchBiz2.name}
                   </div>
                   <div className="rightsb_bizrating">
                     <div className="rightsb_star-rating">
@@ -264,7 +173,7 @@ class App extends React.Component {
                       />
                     </div>
                     <span className="rightsb_review-count">
-                      {this.state.matchBiz2.review_count} reviews
+                      {this.state.matchBiz2 ? this.state.matchBiz2.review_count : 0} reviews
                     </span>
                   </div>
                   <q className="rightsb_tips">{this.state.tip2}</q>
@@ -285,7 +194,7 @@ class App extends React.Component {
                 </div>
                 <div className="rightsb_media-story">
                   <div className="rightsb_media-title">
-                    {this.state.matchBiz3.name}
+                    {this.state.matchBiz3 && this.state.matchBiz3.name}
                   </div>
                   <div className="rightsb_bizrating">
                     <div className="rightsb_star-rating">
@@ -295,7 +204,7 @@ class App extends React.Component {
                       />
                     </div>
                     <span className="rightsb_review-count">
-                      {this.state.matchBiz3.review_count} reviews
+                      {this.state.matchBiz3 ? this.state.matchBiz3.review_count : 0} reviews
                     </span>
                   </div>
                   <q className="rightsb_tips">{this.state.tip3}</q>

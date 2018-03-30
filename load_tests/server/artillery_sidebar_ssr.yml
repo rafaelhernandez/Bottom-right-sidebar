@@ -1,0 +1,16 @@
+config:
+  target: "http://localhost:3010/main/ssr"
+  phases:
+    - duration: 20
+      arrivalRate: 20
+  payload:
+    path: "businessIds_load_testing.csv"
+    fields:
+      - "id"
+scenarios:
+  - name: "Business"
+    flow:
+      - loop:
+        - get:
+            url: "/{{ id }}"
+        count: 100

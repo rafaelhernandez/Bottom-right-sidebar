@@ -1,0 +1,30 @@
+{
+  "config": {
+    "target": "http://18.144.6.35/main/ssr",
+    "phases": [{
+      "duration": 20,
+      "arrivalRate": 10
+    }],
+    "payload": {
+      "path": "businessIds_load_testing.csv",
+      "fields": ["id"]
+    }
+  },
+  "scenarios": [
+    {
+      "name": "Basic Request",
+      "flow": [
+        {
+          "loop": [
+            {
+              "get": {
+                "url": "/{{ id }}"
+              }
+            }
+          ],
+          "count": 100
+        }
+      ]
+    }
+  ]
+}

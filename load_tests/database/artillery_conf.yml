@@ -1,0 +1,21 @@
+config:
+  target: "driver://chompy:chompydatabase@localhost/chompy_business"
+  payload:
+  # path is relative to the location of the test script
+    path: "businessIds_load_testing.csv"
+    fields:
+      - "id"
+  phases:
+    - duration: 5
+      arrivalCount: 10
+  engines:
+    sql: {}
+
+scenarios:
+  - name: "SQL query"
+    engine: "sql"
+    flow:
+      - loop:
+        - query: 'SELECT * from business where id= {{id}}'
+        - think: 1
+        count: 100
